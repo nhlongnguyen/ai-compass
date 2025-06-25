@@ -12,19 +12,46 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Default installation directory
-INSTALL_DIR="$HOME/.claude"
+# Default values
+TOOL="claude-code"
+INSTALL_DIR=""
+
+# Tool-specific installation paths
+get_tool_path() {
+    case "$1" in
+        "claude-code") echo "$HOME/.claude" ;;
+        "cursor") echo "$HOME/.cursor" ;;
+        "continue") echo "$HOME/.continue" ;;
+        "aider") echo "$HOME/.aider" ;;
+        "cody") echo "$HOME/.cody" ;;
+        "universal") echo "$HOME/.ai-compass" ;;
+        *) echo "" ;;
+    esac
+}
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --tool)
+            TOOL="$2"
+            shift 2
+            ;;
         --dir)
             INSTALL_DIR="$2"
             shift 2
             ;;
         -h|--help)
-            echo "Usage: $0 [--dir <directory>]"
+            echo "Usage: $0 [--tool <tool>] [--dir <directory>]"
             echo "Validates AI Compass installation"
+            echo ""
+            echo "Options:"
+            echo "  --tool <tool>        AI tool to validate (claude-code, cursor, continue, aider, cody, universal)"
+            echo "  --dir <directory>    Custom installation directory"
+            echo ""
+            echo "Examples:"
+            echo "  $0                   # Validate Claude Code installation"
+            echo "  $0 --tool cursor     # Validate Cursor installation"
+            echo "  $0 --dir ~/custom/   # Validate custom directory"
             exit 0
             ;;
         *)
@@ -34,9 +61,15 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Set default installation directory if not provided
+if [[ -z "$INSTALL_DIR" ]]; then
+    INSTALL_DIR="$(get_tool_path "$TOOL")"
+fi
+
 echo -e "${BLUE}AI Compass Installation Validator${NC}"
 echo "=================================="
-echo -e "Checking installation at: ${YELLOW}$INSTALL_DIR${NC}"
+echo -e "Tool: ${YELLOW}$TOOL${NC}"
+echo -e "Directory: ${YELLOW}$INSTALL_DIR${NC}"
 echo ""
 
 # Check if installation directory exists
@@ -54,44 +87,58 @@ if [[ -f "$INSTALL_DIR/CLAUDE.md" ]]; then
     # Check for modular memory structure
     if [[ -d "$INSTALL_DIR/memory" ]]; then
         echo -e "  ${GREEN}✓${NC} Modular memory structure"
-        memory_count=$(find "$INSTALL_DIR/memory" -name "*.md" -type f 2>/dev/null | wc -l)
+        memory_count=$(find "$INSTALL_DIR/memory" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
         echo -e "  ${GREEN}✓${NC} Memory modules ($memory_count files)"
     else
         echo -e "  ${YELLOW}⚠${NC} Modular memory structure not found"
     fi
 else
     echo -e "  ${RED}✗${NC} CLAUDE.md not found"
-    missing_files+=("CLAUDE.md")
 fi
 
 # Check for command files
 echo ""
 echo "Checking command system..."
 
-# Check user commands directory (Claude Code specific)
-USER_COMMANDS_DIR="$HOME/.claude/commands"
-if [[ -d "$USER_COMMANDS_DIR" ]]; then
-    user_command_count=$(find "$USER_COMMANDS_DIR" -name "*.md" -type f 2>/dev/null | wc -l)
-    if [[ $user_command_count -gt 0 ]]; then
-        echo -e "  ${GREEN}✓${NC} User commands directory ($user_command_count files)"
-        
-        # Check for shared resources in user commands
-        if [[ -d "$USER_COMMANDS_DIR/shared" ]]; then
-            shared_count=$(find "$USER_COMMANDS_DIR/shared" -name "*.yml" -type f 2>/dev/null | wc -l)
-            echo -e "  ${GREEN}✓${NC} Shared command resources ($shared_count files)"
+# Tool-specific command validation
+if [[ "$TOOL" == "claude-code" ]]; then
+    # Check user commands directory (Claude Code specific)
+    USER_COMMANDS_DIR="$HOME/.claude/commands"
+    if [[ -d "$USER_COMMANDS_DIR" ]]; then
+        user_command_count=$(find "$USER_COMMANDS_DIR" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
+        if [[ $user_command_count -gt 0 ]]; then
+            echo -e "  ${GREEN}✓${NC} User commands directory ($user_command_count files)"
+            
+            # Check for shared resources in user commands
+            if [[ -d "$USER_COMMANDS_DIR/shared" ]]; then
+                shared_count=$(find "$USER_COMMANDS_DIR/shared" -name "*.yml" -type f 2>/dev/null | wc -l | tr -d ' ')
+                echo -e "  ${GREEN}✓${NC} Shared command resources ($shared_count files)"
+            else
+                echo -e "  ${YELLOW}⚠${NC} Shared command resources not found"
+            fi
         else
-            echo -e "  ${YELLOW}⚠${NC} Shared command resources not found"
+            echo -e "  ${YELLOW}⚠${NC} User commands directory exists but is empty"
         fi
     else
-        echo -e "  ${YELLOW}⚠${NC} User commands directory exists but is empty"
+        echo -e "  ${YELLOW}⚠${NC} User commands directory not found at ~/.claude/commands"
     fi
 else
-    echo -e "  ${YELLOW}⚠${NC} User commands directory not found at ~/.claude/commands"
+    # Check tool-specific commands directory
+    if [[ -d "$INSTALL_DIR/commands" ]]; then
+        tool_command_count=$(find "$INSTALL_DIR/commands" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
+        if [[ $tool_command_count -gt 0 ]]; then
+            echo -e "  ${GREEN}✓${NC} Tool commands directory ($tool_command_count files)"
+        else
+            echo -e "  ${YELLOW}⚠${NC} Tool commands directory exists but is empty"
+        fi
+    else
+        echo -e "  ${YELLOW}⚠${NC} Tool commands directory not found at $INSTALL_DIR/commands"
+    fi
 fi
 
 # Check memory commands reference
 if [[ -d "$INSTALL_DIR/memory/commands" ]]; then
-    memory_command_count=$(find "$INSTALL_DIR/memory/commands" -name "*.md" -type f 2>/dev/null | wc -l)
+    memory_command_count=$(find "$INSTALL_DIR/memory/commands" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ')
     if [[ $memory_command_count -gt 0 ]]; then
         echo -e "  ${GREEN}✓${NC} Memory commands reference ($memory_command_count files)"
     fi
@@ -127,13 +174,23 @@ else
     echo -e "${RED}✗ Missing files: ${missing_files[*]}${NC}"
 fi
 
-# Check commands installation
+# Check commands installation based on tool
 commands_installed=false
-if [[ -d "$USER_COMMANDS_DIR" ]] && [[ $(find "$USER_COMMANDS_DIR" -name "*.md" -type f 2>/dev/null | wc -l) -gt 0 ]]; then
-    echo -e "${GREEN}✓ Commands properly installed to ~/.claude/commands${NC}"
-    commands_installed=true
+if [[ "$TOOL" == "claude-code" ]]; then
+    USER_COMMANDS_DIR="$HOME/.claude/commands"
+    if [[ -d "$USER_COMMANDS_DIR" ]] && [[ $(find "$USER_COMMANDS_DIR" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ') -gt 0 ]]; then
+        echo -e "${GREEN}✓ User commands properly installed to ~/.claude/commands${NC}"
+        commands_installed=true
+    else
+        echo -e "${YELLOW}⚠ User commands not found in ~/.claude/commands${NC}"
+    fi
 else
-    echo -e "${YELLOW}⚠ Commands not found in ~/.claude/commands${NC}"
+    if [[ -d "$INSTALL_DIR/commands" ]] && [[ $(find "$INSTALL_DIR/commands" -name "*.md" -type f 2>/dev/null | wc -l | tr -d ' ') -gt 0 ]]; then
+        echo -e "${GREEN}✓ Commands properly installed to $INSTALL_DIR/commands${NC}"
+        commands_installed=true
+    else
+        echo -e "${YELLOW}⚠ Commands not found in $INSTALL_DIR/commands${NC}"
+    fi
 fi
 
 # Overall status
@@ -142,10 +199,24 @@ if [[ ${#missing_files[@]} -eq 0 ]] && [[ "$commands_installed" = true ]]; then
     echo -e "${GREEN}✓ AI Compass installation appears to be complete!${NC}"
     echo ""
     echo "Next steps:"
-    echo "1. Open Claude Code in any project"
-    echo "2. Try a command: /user:analyze --code"
-    echo "3. Activate a persona: /persona:architect"
-    echo "4. Available commands in ~/.claude/commands"
+    case $TOOL in
+        claude-code)
+            echo "1. Open Claude Code in any project"
+            echo "2. Try a command: /user:analyze --code"
+            echo "3. Activate a persona: /persona:architect"
+            echo "4. Available commands in ~/.claude/commands"
+            ;;
+        cursor)
+            echo "1. Open Cursor in any project"
+            echo "2. Use power commands and personas"
+            echo "3. Try: /user:build --react"
+            ;;
+        *)
+            echo "1. Open your AI tool in any project"
+            echo "2. Rules are now active"
+            echo "3. Check tool-specific documentation"
+            ;;
+    esac
 else
     echo -e "${YELLOW}⚠ AI Compass installation may be incomplete${NC}"
     echo ""
@@ -154,7 +225,11 @@ else
     echo "2. Check for error messages during installation"
     echo "3. Verify write permissions to installation directory"
     if [[ "$commands_installed" != true ]]; then
-        echo "4. Commands should be installed to ~/.claude/commands for Claude Code"
+        if [[ "$TOOL" == "claude-code" ]]; then
+            echo "4. Commands should be installed to ~/.claude/commands for Claude Code"
+        else
+            echo "4. Commands should be installed to $INSTALL_DIR/commands for $TOOL"
+        fi
     fi
 fi
 
