@@ -25,16 +25,11 @@ AI coding tools are powerful, but they lack consistency, context awareness, and 
 git clone https://github.com/nhlongnguyen/ai-compass.git
 cd ai-compass
 
-# Install for Claude Code with modular architecture (default)
+# Install for Claude Code (default to ~/.claude/)
 ./install.sh
 
-# Install with different memory options
-./install.sh --modular              # Import-based modular (default)
-./install.sh --project-memory       # Team-shared project memory
-./install.sh --user-memory          # Personal cross-project memory
-
 # Install for other tools
-./install.sh --tool cursor --modular
+./install.sh --tool cursor
 ./install.sh --tool continue --features core
 ./install.sh --universal --dir ~/ai-rules/
 ```
@@ -56,11 +51,8 @@ cd ai-compass
 
    > **Note**: Commands are installed as actual slash commands to `~/.claude/commands` for Claude Code users.
 
-3. **Initialize Project Memory** (for team collaboration)
+3. **Use Memory Management**
    ```bash
-   # Create project-specific memory for your team
-   ./install.sh --project-memory
-   
    # Use Claude Code's native memory commands
    /init                    # Bootstrap project memory
    /memory                  # Edit comprehensive memory
@@ -223,21 +215,23 @@ Status: [completed/remaining/blockers]
 
 AI Compass leverages Claude Code's native memory system:
 
-#### Modular Architecture
+#### User-Level Architecture
 ```
-~/.claude/                      # User-level memory
-├── CLAUDE.md                  # Main import file (~20 lines)
-└── memory/                    # Modular components
-    ├── core/
-    │   ├── philosophy.md
-    │   ├── confidence-system.md
-    │   └── token-economy.md
-    ├── personas/personas-integration.md
-    ├── rules/engineering-standards.md
-    ├── mcp/tool-orchestration.md
-    └── commands/power-commands.md
-
-./CLAUDE.md                    # Project-level memory (team-shared)
+~/.claude/                      # User-level installation
+├── CLAUDE.md                  # Main config
+├── memory/                    # Modular components
+│   ├── core/
+│   │   ├── philosophy.md
+│   │   ├── confidence-system.md
+│   │   └── token-economy.md
+│   ├── personas/personas-integration.md
+│   ├── rules/engineering-standards.md
+│   ├── mcp/tool-orchestration.md
+│   └── commands/power-commands.md
+└── commands/                  # User commands (/user:command)
+    ├── analyze.md
+    ├── build.md
+    └── ...
 ```
 
 
@@ -245,7 +239,7 @@ AI Compass leverages Claude Code's native memory system:
 ```
 ai-compass/
 ├── README.md                  # This file
-├── install.sh                 # Universal installer with memory options
+├── install.sh                 # Universal installer for user-level installation
 ├── core/                     # Core framework files
 │   ├── claude-code/          # Claude Code specific
 │   │   ├── CLAUDE.md        # Modular import-based config
@@ -256,10 +250,8 @@ ai-compass/
 │   │       ├── rules/       # Engineering standards
 │   │       ├── mcp/         # Tool orchestration
 │   │       └── commands/    # Power command behavioral patterns
-│   ├── universal/           # Multi-tool compatibility
-│   └── commands/           # Command system documentation
-├── templates/              # Project templates & memory templates
-│   └── project-memories/   # Project-specific memory templates
+│   └── universal/           # Multi-tool compatibility
+├── templates/              # Project templates
 ├── tools/                 # Maintenance & validation scripts
 └── docs/                  # Documentation & examples
 ```
@@ -268,7 +260,7 @@ ai-compass/
 
 1. **Memory-Efficient**: Modular import system optimizes memory usage
 2. **Native Integration**: Leverages Claude Code's built-in memory discovery and import system
-3. **Dual Hierarchy**: Separate user-level and project-level memory for team collaboration
+3. **User-Focused**: Single user-level installation for simplicity and portability
 4. **Progressive Disclosure**: Basic → Advanced → Expert feature progression  
 5. **Evidence-Based**: All claims backed by measurable data
 6. **Token Conscious**: Optimize for clarity while minimizing token usage
@@ -289,15 +281,11 @@ ai-compass/
 
 ### Installation Examples
 ```bash
-# Claude Code with modular memory (recommended)
-./install.sh --modular
+# Claude Code installation (default)
+./install.sh
 
-# Claude Code with project-specific memory for teams
-./install.sh --project-memory
-
-
-# Cursor with modular architecture
-./install.sh --tool cursor --modular --features commands,personas
+# Cursor installation
+./install.sh --tool cursor --features commands,personas
 
 # Universal installation for any AI tool
 ./install.sh --universal --dir ~/.ai-rules/

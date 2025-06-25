@@ -20,7 +20,7 @@ UPDATE_MODE=false
 UNINSTALL_MODE=false
 FEATURES="all"
 BACKUP_DIR=""
-MEMORY_LEVEL="user"
+ROLLBACK_STATE_FILE=""
 
 # Tool-specific installation paths (function for compatibility)
 get_tool_path() {
@@ -51,6 +51,92 @@ get_tool_features() {
 # Valid tools list
 VALID_TOOLS="claude-code cursor continue aider cody universal"
 
+# Safe installation path patterns (security whitelist)
+SAFE_PATH_PATTERNS=(
+    "$HOME/\.claude(/.*)?"
+    "$HOME/\.cursor(/.*)?"
+    "$HOME/\.continue(/.*)?"
+    "$HOME/\.aider(/.*)?"
+    "$HOME/\.cody(/.*)?"
+    "$HOME/\.ai-compass(/.*)?"
+    "/tmp/ai-compass-test(/.*)?"
+)
+
+# Validate path is within safe boundaries
+validate_installation_path() {
+    local path="$1"
+    
+    # Convert to absolute path
+    if [[ ! "$path" = /* ]]; then
+        local parent_dir=$(dirname "$path")
+        if [[ ! -d "$parent_dir" ]]; then
+            echo -e "${RED}Error: Parent directory '$parent_dir' does not exist${NC}"
+            return 1
+        fi
+        path="$(cd "$parent_dir" && pwd)/$(basename "$path")"
+    fi
+    
+    # Check against whitelist
+    for pattern in "${SAFE_PATH_PATTERNS[@]}"; do
+        if [[ "$path" =~ ^$pattern$ ]]; then
+            echo "$path"
+            return 0
+        fi
+    done
+    
+    echo -e "${RED}Error: Installation path '$path' is not in safe directory whitelist${NC}"
+    echo -e "${YELLOW}Safe patterns:${NC}"
+    printf "  %s\n" "${SAFE_PATH_PATTERNS[@]}"
+    return 1
+}
+
+# Create rollback state tracking
+create_rollback_state() {
+    ROLLBACK_STATE_FILE="$(mktemp)"
+    echo "INSTALL_DIR=$INSTALL_DIR" > "$ROLLBACK_STATE_FILE"
+    echo "BACKUP_DIR=$BACKUP_DIR" >> "$ROLLBACK_STATE_FILE"
+    echo "TOOL=$TOOL" >> "$ROLLBACK_STATE_FILE"
+    echo "TIMESTAMP=$(date '+%Y%m%d_%H%M%S')" >> "$ROLLBACK_STATE_FILE"
+}
+
+# Cleanup rollback state on success
+cleanup_rollback_state() {
+    if [[ -n "$ROLLBACK_STATE_FILE" ]] && [[ -f "$ROLLBACK_STATE_FILE" ]]; then
+        rm -f "$ROLLBACK_STATE_FILE"
+    fi
+}
+
+# Execute rollback on failure
+execute_rollback() {
+    if [[ -n "$ROLLBACK_STATE_FILE" ]] && [[ -f "$ROLLBACK_STATE_FILE" ]]; then
+        echo -e "${YELLOW}Executing rollback...${NC}"
+        source "$ROLLBACK_STATE_FILE"
+        
+        if [[ -n "$BACKUP_DIR" ]] && [[ -d "$BACKUP_DIR" ]]; then
+            echo "Restoring from backup: $BACKUP_DIR"
+            rm -rf "$INSTALL_DIR"
+            cp -r "$BACKUP_DIR"/* "$INSTALL_DIR"/
+            echo -e "${GREEN}Rollback completed${NC}"
+        else
+            echo -e "${YELLOW}No backup available for rollback${NC}"
+        fi
+        
+        cleanup_rollback_state
+    fi
+}
+
+# Enhanced error handler
+handle_error() {
+    local exit_code=$?
+    echo -e "${RED}Installation failed with exit code $exit_code${NC}"
+    execute_rollback
+    exit $exit_code
+}
+
+# Set up error handling
+trap handle_error ERR
+
+
 # Function to show usage
 show_usage() {
     echo -e "${BLUE}AI Compass Universal Installer${NC}"
@@ -63,14 +149,9 @@ show_usage() {
     echo "  --universal             Install universal compatibility rules"
     echo ""
     echo "Installation Options:"
-    echo "  --dir <directory>       Custom installation directory"
+    echo "  --dir <directory>       Custom installation directory (default: ~/.claude)"
     echo "  --features <list>       Comma-separated features (core,commands,personas,mcp,collaboration,all)"
     echo "  --backup-dir <dir>      Custom backup directory"
-    echo ""
-    echo "Memory Architecture:"
-    echo "  --modular               Use import-based modular architecture (default)"
-    echo "  --project-memory        Install project-level memory (./CLAUDE.md)"
-    echo "  --user-memory           Install user-level memory (~/.claude/CLAUDE.md)"
     echo ""
     echo "Execution Options:"
     echo "  --force                 Skip confirmation prompts"
@@ -79,9 +160,8 @@ show_usage() {
     echo "  -h, --help             Show this help"
     echo ""
     echo "Examples:"
-    echo "  $0                                    # Default: Claude Code modular user memory"
-    echo "  $0 --project-memory                  # Install team-shared project memory"
-    echo "  $0 --tool cursor --modular           # Cursor with modular architecture"
+    echo "  $0                                    # Default: Claude Code to ~/.claude"
+    echo "  $0 --tool cursor                     # Cursor installation"
     echo "  $0 --universal --dir ~/ai-rules/     # Universal installation"
     echo "  $0 --update --backup-dir ~/backups/  # Update with custom backup"
     echo ""
@@ -114,18 +194,6 @@ while [[ $# -gt 0 ]]; do
             BACKUP_DIR="$2"
             shift 2
             ;;
-        --modular)
-            # Modular is now the default and only option
-            shift
-            ;;
-        --project-memory)
-            MEMORY_LEVEL="project"
-            shift
-            ;;
-        --user-memory)
-            MEMORY_LEVEL="user"
-            shift
-            ;;
         --force)
             FORCE_INSTALL=true
             shift
@@ -157,23 +225,15 @@ if [[ ! "$VALID_TOOLS" =~ "$TOOL" ]]; then
     exit 1
 fi
 
-# Set installation directory based on memory level
+# Set installation directory to tool-specific path
 if [[ -z "$INSTALL_DIR" ]]; then
-    if [[ "$MEMORY_LEVEL" == "project" ]]; then
-        INSTALL_DIR="$(pwd)"
-    else
-        INSTALL_DIR="$(get_tool_path "$TOOL")"
-    fi
+    INSTALL_DIR="$(get_tool_path "$TOOL")"
 fi
 
-# Convert to absolute path if relative
-if [[ ! "$INSTALL_DIR" = /* ]]; then
-    parent_dir=$(dirname "$INSTALL_DIR")
-    if [[ ! -d "$parent_dir" ]]; then
-        echo -e "${RED}Error: Parent directory '$parent_dir' does not exist${NC}"
-        exit 1
-    fi
-    INSTALL_DIR="$(cd "$parent_dir" && pwd)/$(basename "$INSTALL_DIR")"
+# Validate and secure installation path
+INSTALL_DIR=$(validate_installation_path "$INSTALL_DIR")
+if [[ $? -ne 0 ]]; then
+    exit 1
 fi
 
 # Set features based on tool if not specified
@@ -205,6 +265,30 @@ if [[ "$UNINSTALL_MODE" = true ]]; then
     fi
     
     echo "Removing AI Compass..."
+    
+    # Enhanced safety check for rm -rf
+    if [[ -z "$INSTALL_DIR" ]] || [[ "$INSTALL_DIR" == "/" ]] || [[ "$INSTALL_DIR" == "$HOME" ]]; then
+        echo -e "${RED}Error: Refusing to remove critical directory '$INSTALL_DIR'${NC}"
+        exit 1
+    fi
+    
+    # Verify path is still within safe boundaries
+    if ! validate_installation_path "$INSTALL_DIR" >/dev/null; then
+        echo -e "${RED}Error: Refusing to remove directory outside safe boundaries${NC}"
+        exit 1
+    fi
+    
+    # Check if directory contains expected AI Compass files
+    if [[ ! -f "$INSTALL_DIR/CLAUDE.md" ]] && [[ ! -d "$INSTALL_DIR/memory" ]] && [[ ! -d "$INSTALL_DIR/commands" ]]; then
+        echo -e "${YELLOW}Warning: Directory doesn't appear to contain AI Compass installation${NC}"
+        echo -n "Continue with removal? (y/n): "
+        read -r confirm_removal
+        if [[ "$confirm_removal" != "y" ]]; then
+            echo "Removal cancelled."
+            exit 0
+        fi
+    fi
+    
     rm -rf "$INSTALL_DIR"
     echo -e "${GREEN}✓ AI Compass uninstalled successfully!${NC}"
     exit 0
@@ -215,8 +299,6 @@ echo "==============================="
 echo -e "Tool: ${YELLOW}$TOOL${NC}"
 echo -e "Directory: ${YELLOW}$INSTALL_DIR${NC}"
 echo -e "Features: ${YELLOW}$FEATURES${NC}"
-echo -e "Architecture: ${YELLOW}modular${NC}"
-echo -e "Memory Level: ${YELLOW}$MEMORY_LEVEL${NC}"
 echo ""
 
 # Check write permissions
@@ -294,6 +376,9 @@ else
     echo "Installing AI Compass..."
 fi
 
+# Initialize atomic installation with rollback capability
+echo "Initializing secure installation process..."
+
 # Create directory structure
 echo "Creating directories..."
 mkdir -p "$INSTALL_DIR"
@@ -309,14 +394,18 @@ if [[ " ${FEATURE_ARRAY[*]} " =~ " core " ]] || [[ " ${FEATURE_ARRAY[*]} " =~ " 
     if [[ -d "core/$TOOL" ]]; then
         echo "  Installing $TOOL-specific configurations..."
         
-        # Handle memory architecture choice
-        # Use modular memory architecture
+        # Handle memory architecture - install memory to ~/.claude/ with absolute paths
         if [[ -d "core/$TOOL/memory" ]]; then
-            echo "  Using modular memory architecture..."
-            # Copy modular CLAUDE.md and memory directory
-            cp "core/$TOOL/CLAUDE.md" "$INSTALL_DIR/"
+            echo "  Installing modular memory architecture..."
+            
+            # Install memory files directly to ~/.claude/ (user-level)
+            echo "  Installing memory files to $INSTALL_DIR/memory/..."
             mkdir -p "$INSTALL_DIR/memory"
             cp -r "core/$TOOL/memory/"* "$INSTALL_DIR/memory/"
+            
+            # Generate CLAUDE.md with absolute paths to memory files
+            echo "  Generating CLAUDE.md with absolute import paths..."
+            generate_claude_md_with_absolute_paths
             
             # Copy other non-CLAUDE files
             for file in core/$TOOL/*.md; do
@@ -353,20 +442,29 @@ if [[ " ${FEATURE_ARRAY[*]} " =~ " commands " ]] || [[ " ${FEATURE_ARRAY[*]} " =
     if [[ -d "core/$TOOL/commands" ]]; then
         echo "Installing command system..."
         
-        # For Claude Code, install commands to ~/.claude/commands (user commands)
+        # For Claude Code, install user commands to ~/.claude/commands
         if [[ "$TOOL" == "claude-code" ]]; then
             USER_COMMANDS_DIR="$HOME/.claude/commands"
             echo "  Installing user commands to $USER_COMMANDS_DIR..."
+            echo "  (Accessible via /user:command-name)"
             mkdir -p "$USER_COMMANDS_DIR"
-            cp -r "core/$TOOL/commands/"* "$USER_COMMANDS_DIR/" 2>/dev/null || true
+            if ! cp -r "core/$TOOL/commands/"* "$USER_COMMANDS_DIR/" 2>/dev/null; then
+                echo -e "${YELLOW}Warning: Failed to install some user commands to $USER_COMMANDS_DIR${NC}"
+                echo "Check permissions and retry if needed"
+            fi
             
             # Also copy to memory for reference
             mkdir -p "$INSTALL_DIR/memory/commands"
-            cp -r "core/$TOOL/commands/"* "$INSTALL_DIR/memory/commands/" 2>/dev/null || true
+            if ! cp -r "core/$TOOL/commands/"* "$INSTALL_DIR/memory/commands/" 2>/dev/null; then
+                echo -e "${YELLOW}Warning: Failed to copy commands to memory directory${NC}"
+            fi
         else
             # For other tools, install to tool-specific directory
             mkdir -p "$INSTALL_DIR/commands"
-            cp -r "core/$TOOL/commands/"* "$INSTALL_DIR/commands/" 2>/dev/null || true
+            if ! cp -r "core/$TOOL/commands/"* "$INSTALL_DIR/commands/" 2>/dev/null; then
+                echo -e "${YELLOW}Warning: Failed to install commands to $INSTALL_DIR/commands${NC}"
+                echo "Installation may be incomplete"
+            fi
         fi
     fi
 fi
@@ -390,27 +488,111 @@ fi
 echo ""
 echo "Verifying installation..."
 
-# Count installed files
-main_files=$(find "$INSTALL_DIR" -maxdepth 1 -name "*.md" -type f 2>/dev/null | wc -l)
-command_files=0
+# Create rollback state for potential failure
+create_rollback_state
 
-# Count commands based on tool and installation method
-if [[ "$TOOL" == "claude-code" ]] && [[ -d "$HOME/.claude/commands" ]]; then
-    command_files=$(find "$HOME/.claude/commands" -name "*.md" -type f 2>/dev/null | wc -l)
-elif [[ -d "$INSTALL_DIR/commands" ]]; then
-    command_files=$(find "$INSTALL_DIR/commands" -name "*.md" -type f 2>/dev/null | wc -l)
-fi
-
-echo -e "Main config files: ${GREEN}$main_files${NC}"
-if [[ $command_files -gt 0 ]]; then
-    if [[ "$TOOL" == "claude-code" ]]; then
-        echo -e "User commands: ${GREEN}$command_files${NC} (installed to ~/.claude/commands)"
-    else
-        echo -e "Command files: ${GREEN}$command_files${NC}"
+# Comprehensive verification function
+verify_installation() {
+    local verification_failed=false
+    local issues=()
+    
+    # Check core files exist and are readable
+    if [[ ! -f "$INSTALL_DIR/CLAUDE.md" ]]; then
+        issues+=("Missing main CLAUDE.md configuration file")
+        verification_failed=true
+    elif [[ ! -r "$INSTALL_DIR/CLAUDE.md" ]]; then
+        issues+=("CLAUDE.md exists but is not readable")
+        verification_failed=true
     fi
+    
+    # Check modular memory structure
+    if [[ -d "$INSTALL_DIR/memory" ]]; then
+        local memory_dirs=("core" "personas" "rules")
+        for dir in "${memory_dirs[@]}"; do
+            if [[ ! -d "$INSTALL_DIR/memory/$dir" ]]; then
+                issues+=("Missing memory module: $dir")
+                verification_failed=true
+            fi
+        done
+        
+        # Validate import chain integrity
+        if command -v grep >/dev/null 2>&1; then
+            while IFS= read -r import_line; do
+                import_file=$(echo "$import_line" | sed 's/@\.\/memory\///g')
+                if [[ ! -f "$INSTALL_DIR/memory/$import_file" ]]; then
+                    issues+=("Broken import: $import_file referenced but not found")
+                    verification_failed=true
+                fi
+            done < <(grep "^@\.\/memory\/" "$INSTALL_DIR/CLAUDE.md" 2>/dev/null || true)
+        fi
+    fi
+    
+    # Verify command installation based on tool
+    if [[ "$TOOL" == "claude-code" ]]; then
+        local essential_commands=("analyze.md" "build.md" "troubleshoot.md")
+        
+        # Verify user commands
+        if [[ ! -d "$HOME/.claude/commands" ]]; then
+            issues+=("User commands directory not created at ~/.claude/commands")
+            verification_failed=true
+        else
+            for cmd in "${essential_commands[@]}"; do
+                if [[ ! -f "$HOME/.claude/commands/$cmd" ]]; then
+                    issues+=("Missing essential user command: $cmd")
+                    verification_failed=true
+                fi
+            done
+        fi
+    fi
+    
+    # Check file permissions
+    if [[ ! -w "$INSTALL_DIR" ]]; then
+        issues+=("Installation directory is not writable")
+        verification_failed=true
+    fi
+    
+    # Report results
+    if [[ "$verification_failed" == true ]]; then
+        echo -e "${RED}Installation verification failed:${NC}"
+        printf "  - %s\n" "${issues[@]}"
+        return 1
+    else
+        echo -e "${GREEN}✓ Installation verification passed${NC}"
+        return 0
+    fi
+}
+
+# Run verification
+if verify_installation; then
+    # Count files for summary
+    main_files=$(find "$INSTALL_DIR" -maxdepth 1 -name "*.md" -type f 2>/dev/null | wc -l)
+    command_files=0
+    
+    # Count commands based on tool and installation method
+    if [[ "$TOOL" == "claude-code" ]] && [[ -d "$HOME/.claude/commands" ]]; then
+        command_files=$(find "$HOME/.claude/commands" -name "*.md" -type f 2>/dev/null | wc -l)
+    elif [[ -d "$INSTALL_DIR/commands" ]]; then
+        command_files=$(find "$INSTALL_DIR/commands" -name "*.md" -type f 2>/dev/null | wc -l)
+    fi
+    
+    echo -e "Main config files: ${GREEN}$main_files${NC}"
+    if [[ $command_files -gt 0 ]]; then
+        if [[ "$TOOL" == "claude-code" ]]; then
+            echo -e "User commands: ${GREEN}$command_files${NC} (installed to ~/.claude/commands, use /user:name)"
+        else
+            echo -e "Command files: ${GREEN}$command_files${NC}"
+        fi
+    fi
+else
+    echo -e "${RED}Verification failed - executing rollback${NC}"
+    execute_rollback
+    exit 1
 fi
 
-# Check installation success
+# Clean up rollback state on successful installation
+cleanup_rollback_state
+
+# Installation success reporting
 if [[ $main_files -gt 0 ]]; then
     echo ""
     if [[ "$UPDATE_MODE" = true ]]; then

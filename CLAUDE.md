@@ -16,14 +16,11 @@ AI Compass is a universal configuration framework that transforms Claude Code an
 
 ### Installation & Setup
 ```bash
-# Default installation (Claude Code, modular, user-level)
+# Default installation (Claude Code to ~/.claude/)
 ./install.sh
 
-# Project-level memory for team collaboration
-./install.sh --project-memory
-
 # Different tools and options
-./install.sh --tool cursor --modular
+./install.sh --tool cursor
 ./install.sh --universal --dir ~/.ai-rules/
 ```
 
@@ -41,25 +38,29 @@ AI Compass is a universal configuration framework that transforms Claude Code an
 
 ### Testing Commands
 ```bash
-# Test with different configurations
+# Test installation with backup
 ./install.sh --force --backup-dir ~/test-backups/
 ./tools/memory-validate.sh --max-depth 3
 ```
 
 ## Architecture
 
-### Modular Memory System
+### User-Level Memory System
 The project uses Claude Code's native import capability to create maintainable, modular configurations:
 
 ```
-core/claude-code/
-├── CLAUDE.md              # Main import file (~40 lines)
-└── memory/               # Modular components
-    ├── core/            # Philosophy, confidence, token economy
-    ├── personas/        # Specialized thinking modes
-    ├── rules/           # Engineering standards
-    ├── mcp/            # Tool orchestration
-    └── commands/       # Power commands
+~/.claude/                  # User-level installation
+├── CLAUDE.md              # Main config
+├── memory/               # Modular components
+│   ├── core/            # Philosophy, confidence, token economy
+│   ├── personas/        # Specialized thinking modes
+│   ├── rules/           # Engineering standards
+│   ├── mcp/            # Tool orchestration
+│   └── commands/       # Power commands
+└── commands/             # User commands (/user:command)
+    ├── analyze.md
+    ├── build.md
+    └── ...
 ```
 
 ### Multi-Tool Compatibility
@@ -69,10 +70,10 @@ Universal installer supports different AI tools with appropriate feature subsets
 - **Continue**: Basic collaboration rules
 - **Universal**: Core collaboration patterns
 
-### Memory Levels
-- **User-level** (`~/.claude/`): Personal configuration
-- **Project-level** (`./CLAUDE.md`): Team-shared configuration
-- Templates available for common project types (React, API, Full-stack)
+### Installation Architecture
+- **User-level only** (`~/.claude/`): Personal configuration
+- **Portable**: Configuration travels with user across projects
+- **Modular**: Memory files organized by domain for maintainability
 
 ## Power Commands
 
@@ -120,10 +121,10 @@ The memory system validates:
 Tool-specific configurations with shared universal patterns
 
 ### Templates (`/templates/`)
-Project memory templates for rapid setup:
-- `react-project.md`: Frontend-focused configuration
-- `api-project.md`: Backend API development
-- `fullstack-project.md`: Full-stack applications
+Project templates for rapid setup:
+- Configuration examples for different project types
+- Reusable patterns and workflows
+- Customization guides
 
 ### Tools (`/tools/`)
 Maintenance and validation scripts for memory management
