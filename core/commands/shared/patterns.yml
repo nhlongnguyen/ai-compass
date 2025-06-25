@@ -1,0 +1,279 @@
+# Shared Patterns & Resources for AI Compass
+
+## Confidence Assessment Patterns
+
+confidence_calculation:
+  baseline: 70
+  base_factors:
+    task_complexity:
+      simple: +5
+      moderate: 0
+      complex: -10
+    domain_familiarity:
+      expert: +5
+      familiar: 0
+      unfamiliar: -10
+    information_completeness:
+      complete: +5
+      partial: 0
+      incomplete: -10
+  
+  optimization_factors:
+    solution_exploration:
+      multiple_alternatives: +10
+      single_approach: 0
+      no_alternatives: -10
+    trade_off_analysis:
+      all_analyzed: +10
+      key_considered: 0
+      not_analyzed: -15
+    context_optimization:
+      optimized: +5
+      appropriate: 0
+      generic: -5
+  
+  modifiers:
+    interdependent_elements: -10
+    high_stakes_impact: -15
+    requirement_assumptions: -20
+    multiple_valid_approaches: -20
+    multi_domain_problems_max: 95
+
+## Evidence-Based Language Patterns
+
+prohibited_language:
+  qualitative_claims:
+    - "best"
+    - "optimal" 
+    - "faster"
+    - "secure"
+    - "better"
+    - "improved"
+    - "enhanced"
+    - "always"
+    - "never"
+    - "guaranteed"
+    - "perfect"
+    - "complete"
+    - "obviously"
+    - "clearly"
+    - "simply"
+    - "just"
+    - "easily"
+
+required_evidence:
+  performance: "testing confirms|metrics show|benchmarks prove|measured at"
+  security: "scans indicate|audits reveal|analysis demonstrates|verified by"
+  quality: "coverage reports|static analysis|review findings|tests confirm"
+  compatibility: "version testing|environment validation|integration tests"
+
+acceptable_qualifiers:
+  uncertainty: "may|could|potentially|typically|often|sometimes"
+  evidence_based: "documentation suggests|patterns indicate|research shows"
+  measured: "observed in|reported by|demonstrated at|according to"
+
+## Command Execution Patterns
+
+command_confidence_mapping:
+  high_confidence_commands:
+    - "/user:build"
+    - "/user:test"
+    - "/user:cleanup"
+    - "/user:git"
+  
+  medium_confidence_commands:
+    - "/user:analyze"
+    - "/user:improve"
+    - "/user:design"
+    - "/user:troubleshoot"
+  
+  low_confidence_commands:
+    - "/user:migrate"
+    - "/user:deploy --env prod"
+    - "/user:scan --security"
+
+collaboration_patterns:
+  sequential_chains:
+    design_review: "architect → security → performance → qa"
+    feature_development: "architect → frontend → backend → qa"
+    problem_solving: "analyzer → refactorer → performance"
+  
+  parallel_patterns:
+    full_stack: "frontend & backend & security"
+    quality_focus: "qa & refactorer & performance"
+    learning_support: "mentor & analyzer"
+
+## MCP Tool Selection Patterns
+
+tool_selection_rules:
+  context7_triggers:
+    - "external library mentioned"
+    - "documentation request"
+    - "API integration"
+    - "framework question"
+  
+  sequential_triggers:
+    - "complex analysis needed"
+    - "step-by-step breakdown"
+    - "architecture design"
+    - "root cause analysis"
+  
+  magic_triggers:
+    - "UI component request"
+    - "component generation"
+    - "interface design"
+    - "visual element creation"
+  
+  puppeteer_triggers:
+    - "browser testing"
+    - "e2e validation"
+    - "visual regression"
+    - "performance testing"
+
+research_first_protocol:
+  mandatory_triggers:
+    - "external_library_detected"
+    - "new_component_request"
+    - "api_integration"
+    - "unknown_pattern"
+    - "confidence_below_90"
+  
+  success_criteria:
+    - "official_documentation_found"
+    - "multiple_sources_agree"
+    - "clear_examples_available"
+    - "best_practices_identified"
+
+## Quality Gates & Standards
+
+code_quality_standards:
+  generation_rules:
+    - "no_comments_unless_requested"
+    - "short_meaningful_names"
+    - "minimal_boilerplate"
+    - "clean_readable_structure"
+  
+  architecture_principles:
+    - "KISS: simple > clever"
+    - "YAGNI: immediate needs only"
+    - "SOLID: single responsibility"
+    - "DRY: extract common patterns"
+
+testing_standards:
+  hierarchy:
+    - "unit_tests: core_business_logic"
+    - "integration_tests: api_contracts"
+    - "e2e_tests: critical_workflows"
+  
+  quality_gates:
+    - "tdd_cycle: red_green_refactor"
+    - "aaa_pattern: arrange_act_assert"
+    - "coverage_target: 80%_critical_paths"
+    - "edge_cases: boundary_conditions"
+
+security_standards:
+  validation_requirements:
+    - "validate_all_inputs"
+    - "sanitize_all_outputs"
+    - "parameterized_queries"
+    - "secure_authentication"
+  
+  development_practices:
+    - "never_commit_secrets"
+    - "environment_variables_for_sensitive"
+    - "regular_dependency_scanning"
+    - "secure_backup_procedures"
+
+## Token Optimization Patterns
+
+ultracompressed_rules:
+  activation_triggers:
+    - "--uc flag present"
+    - "context usage > 70%"
+    - "natural language request"
+  
+  optimization_techniques:
+    - "remove_filler_words: the|a|very|really|that|which"
+    - "use_symbols: →|&:»"
+    - "prefer_yaml_over_prose"
+    - "bullets_over_paragraphs"
+    - "essential_facts_only"
+  
+  preservation_requirements:
+    - "maintain_technical_accuracy"
+    - "preserve_actionable_information"
+    - "keep_critical_context"
+    - "auto_generate_legend"
+
+symbol_system:
+  core_symbols:
+    "→": "leads to, results in, causes"
+    "&": "and, with, combined with"
+    ">": "greater than, preferred over"
+    "|": "or, alternative, separator"
+    ":": "define, means, equals"
+    "»": "sequence, then, followed by"
+  
+  abbreviations:
+    "cfg": "configuration"
+    "docs": "documentation"
+    "ops": "operations"
+    "impl": "implementation"
+    "perf": "performance"
+    "auth": "authentication"
+    "UI": "user interface"
+
+## Error Recovery Patterns
+
+failure_response_patterns:
+  high_confidence_errors:
+    - "analyze_root_cause_immediately"
+    - "adjust_confidence_factors"
+    - "document_failure_pattern"
+    - "implement_prevention_measures"
+  
+  low_confidence_patterns:
+    - "acknowledge_uncertainty_clearly"
+    - "request_specific_clarification"
+    - "offer_alternative_approaches"
+    - "suggest_exploratory_steps"
+
+recovery_strategies:
+  tool_failures:
+    context7: "try_broader_terms → sequential_analysis"
+    sequential: "use_partial_results → ask_targeted_questions"
+    magic: "try_different_terms_once → manual_implementation"
+  
+  confidence_recovery:
+    research_protocol: "documentation_lookup → expert_consultation"
+    collaboration_protocol: "seek_human_input → joint_analysis"
+    validation_protocol: "test_approach → measure_results"
+
+## Session Management Patterns
+
+context_preservation:
+  session_structure:
+    - "problem: brief_description"
+    - "requirements: key_requirements"
+    - "decisions: decisions_with_rationale"
+    - "status: completed_remaining_blockers"
+    - "confidence_history: track_levels_outcomes"
+  
+  learning_integration:
+    - "track_confidence_accuracy"
+    - "successful_pattern_documentation"
+    - "user_preference_adaptation"
+    - "cross_session_knowledge_transfer"
+
+workflow_optimization:
+  smart_defaults:
+    - "recent_file_context"
+    - "user_preference_application"
+    - "project_pattern_recognition"
+    - "successful_sequence_memory"
+  
+  efficiency_patterns:
+    - "batch_similar_operations"
+    - "parallel_independent_tasks"
+    - "reuse_previous_results"
+    - "smart_caching_expensive_ops"
