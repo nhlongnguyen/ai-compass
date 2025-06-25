@@ -1,6 +1,6 @@
 # Power Commands Integration
 
-> **Note**: These are behavioral guidelines activated by natural language, not literal slash commands.
+> **Note**: These are actual slash commands installed to ~/.claude/commands during installation. They combine behavioral patterns with Claude Code's native command system.
 
 ## Analysis & Debugging Patterns
 

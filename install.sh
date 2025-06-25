@@ -350,10 +350,24 @@ fi
 
 # Install commands
 if [[ " ${FEATURE_ARRAY[*]} " =~ " commands " ]] || [[ " ${FEATURE_ARRAY[*]} " =~ " all " ]]; then
-    if [[ -d "core/commands" ]]; then
+    if [[ -d "core/$TOOL/commands" ]]; then
         echo "Installing command system..."
-        mkdir -p "$INSTALL_DIR/commands"
-        cp -r core/commands/* "$INSTALL_DIR/commands/" 2>/dev/null || true
+        
+        # For Claude Code, install commands to ~/.claude/commands (user commands)
+        if [[ "$TOOL" == "claude-code" ]]; then
+            USER_COMMANDS_DIR="$HOME/.claude/commands"
+            echo "  Installing user commands to $USER_COMMANDS_DIR..."
+            mkdir -p "$USER_COMMANDS_DIR"
+            cp -r "core/$TOOL/commands/"* "$USER_COMMANDS_DIR/" 2>/dev/null || true
+            
+            # Also copy to memory for reference
+            mkdir -p "$INSTALL_DIR/memory/commands"
+            cp -r "core/$TOOL/commands/"* "$INSTALL_DIR/memory/commands/" 2>/dev/null || true
+        else
+            # For other tools, install to tool-specific directory
+            mkdir -p "$INSTALL_DIR/commands"
+            cp -r "core/$TOOL/commands/"* "$INSTALL_DIR/commands/" 2>/dev/null || true
+        fi
     fi
 fi
 
@@ -379,13 +393,21 @@ echo "Verifying installation..."
 # Count installed files
 main_files=$(find "$INSTALL_DIR" -maxdepth 1 -name "*.md" -type f 2>/dev/null | wc -l)
 command_files=0
-if [[ -d "$INSTALL_DIR/commands" ]]; then
+
+# Count commands based on tool and installation method
+if [[ "$TOOL" == "claude-code" ]] && [[ -d "$HOME/.claude/commands" ]]; then
+    command_files=$(find "$HOME/.claude/commands" -name "*.md" -type f 2>/dev/null | wc -l)
+elif [[ -d "$INSTALL_DIR/commands" ]]; then
     command_files=$(find "$INSTALL_DIR/commands" -name "*.md" -type f 2>/dev/null | wc -l)
 fi
 
 echo -e "Main config files: ${GREEN}$main_files${NC}"
 if [[ $command_files -gt 0 ]]; then
-    echo -e "Command files: ${GREEN}$command_files${NC}"
+    if [[ "$TOOL" == "claude-code" ]]; then
+        echo -e "User commands: ${GREEN}$command_files${NC} (installed to ~/.claude/commands)"
+    else
+        echo -e "Command files: ${GREEN}$command_files${NC}"
+    fi
 fi
 
 # Check installation success
@@ -413,8 +435,9 @@ if [[ $main_files -gt 0 ]]; then
         case $TOOL in
             claude-code)
                 echo "1. Open any project with Claude Code"
-                echo "2. Try: /user:analyze --code"
+                echo "2. Try user commands: /user:analyze --code"
                 echo "3. Switch persona: /persona:architect"
+                echo "4. Commands available from ~/.claude/commands"
                 ;;
             cursor)
                 echo "1. Open Cursor in any project"

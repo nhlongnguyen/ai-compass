@@ -43,7 +43,7 @@ cd ai-compass
 
 1. **Test Basic Functionality**
    ```bash
-   /user:analyze --code    # Analyze current project
+   /user:analyze --code    # Analyze current project (slash command)
    /persona:architect      # Switch to systems thinking mode
    ```
 
@@ -53,6 +53,8 @@ cd ai-compass
    /user:troubleshoot --investigate # Debug issues systematically
    /user:improve --perf --iterate   # Optimize performance iteratively
    ```
+
+   > **Note**: Commands are installed as actual slash commands to `~/.claude/commands` for Claude Code users.
 
 3. **Initialize Project Memory** (for team collaboration)
    ```bash
@@ -120,6 +122,8 @@ Switch AI thinking modes instantly for specialized problem-solving:
 
 ## ⚡ Power Commands
 
+**AI Compass provides 18+ slash commands for real development workflows, installed to `~/.claude/commands` for immediate use.**
+
 ### Analysis & Debugging
 ```bash
 /user:analyze --code --security --think        # Multi-dimensional analysis
@@ -155,6 +159,8 @@ Switch AI thinking modes instantly for specialized problem-solving:
 --plan / --watch / --interactive               # Execution modes
 --uc / --ultracompressed                      # Token optimization
 ```
+
+> **Command Installation**: For Claude Code, commands are automatically installed to `~/.claude/commands` as user commands (prefix `/user:`). Other tools use tool-specific directories.
 
 ## 🛠️ Advanced Features
 
@@ -243,12 +249,13 @@ ai-compass/
 ├── core/                     # Core framework files
 │   ├── claude-code/          # Claude Code specific
 │   │   ├── CLAUDE.md        # Modular import-based config
+│   │   ├── commands/        # Slash commands (installed to ~/.claude/commands)
 │   │   └── memory/          # Modular memory components
 │   │       ├── core/        # Core philosophy & systems
 │   │       ├── personas/    # Persona integration
 │   │       ├── rules/       # Engineering standards
 │   │       ├── mcp/         # Tool orchestration
-│   │       └── commands/    # Power commands
+│   │       └── commands/    # Power command behavioral patterns
 │   ├── universal/           # Multi-tool compatibility
 │   └── commands/           # Command system documentation
 ├── templates/              # Project templates & memory templates

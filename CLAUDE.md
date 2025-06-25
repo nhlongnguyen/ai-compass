@@ -32,7 +32,7 @@ AI Compass is a universal configuration framework that transforms Claude Code an
 # Validate memory structure and imports
 ./tools/memory-validate.sh
 
-# Validate installation completeness
+# Validate installation completeness (including commands)
 ./tools/validate-install.sh
 
 # Initialize project memory
@@ -73,6 +73,24 @@ Universal installer supports different AI tools with appropriate feature subsets
 - **User-level** (`~/.claude/`): Personal configuration
 - **Project-level** (`./CLAUDE.md`): Team-shared configuration
 - Templates available for common project types (React, API, Full-stack)
+
+## Power Commands
+
+AI Compass installs 18+ slash commands to `~/.claude/commands` for immediate use:
+
+### Core Commands
+- `/user:analyze` - Multi-dimensional code analysis
+- `/user:build` - AI-assisted development workflows  
+- `/user:troubleshoot` - Systematic debugging
+- `/user:improve` - Performance and quality optimization
+- `/user:design` - Architecture and API design
+- `/user:test` - Comprehensive testing strategies
+- `/user:scan` - Security and quality validation
+
+### Command Features
+- **Universal flags**: `--think`, `--magic`, `--c7`, `--uc` for enhanced functionality
+- **MCP integration**: Automatic tool orchestration based on context
+- **Persona activation**: Commands auto-activate appropriate cognitive modes
 
 ## Key Development Patterns
 
@@ -123,7 +141,8 @@ Examples, configuration guides, and customization patterns
 
 ## Memory Management
 
-Use Claude Code's native memory commands:
+Use Claude Code's native memory and command systems:
 - `/init` - Bootstrap project-specific memory
 - `/memory` - Edit comprehensive memory configuration
 - `#` - Quick memory additions during development
+- `/user:*` - Power commands for development workflows (installed to ~/.claude/commands)
