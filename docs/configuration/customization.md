@@ -5,21 +5,48 @@
 AI Compass uses several configuration files that can be customized:
 
 ```
-~/.claude/                          # Default installation
-├── CLAUDE.md                       # Core behaviors & token optimization
-├── RULES.md                        # Engineering standards & practices
-├── PERSONAS.md                     # Specialized thinking modes  
-├── MCP.md                         # Tool orchestration rules
-├── commands/                      # Command system
-│   ├── user-commands.md          # Power commands definition
-│   ├── persona-commands.md       # Persona activation
-│   └── shared/                   # Shared resources
-└── collaboration-rules.md         # Universal collaboration patterns
+~/.claude/                          # User-level installation
+├── CLAUDE.md                       # Main config with imports
+├── memory/                         # Modular memory components
+│   ├── core/                      # Core philosophy & systems
+│   │   ├── philosophy.md
+│   │   ├── confidence-system.md
+│   │   ├── token-economy.md
+│   │   └── context-management.md
+│   ├── personas/
+│   │   └── personas-integration.md # All persona definitions
+│   ├── rules/
+│   │   └── engineering-standards.md # All engineering rules
+│   ├── mcp/
+│   │   └── tool-orchestration.md  # MCP integration rules
+│   └── commands/
+│       └── power-commands.md      # Command behavioral patterns
+└── commands/                      # User commands (/user:command)
+    ├── analyze.md
+    ├── build.md
+    ├── troubleshoot.md
+    └── shared/                   # Shared command resources
 ```
 
-## Core Configuration (CLAUDE.md)
+## Core Configuration
 
-### Confidence Thresholds
+### Modular Memory System
+AI Compass now uses a modular import-based architecture. The main `CLAUDE.md` file imports specialized modules:
+
+```markdown
+# CLAUDE.md structure
+@./memory/core/philosophy.md           # Core collaboration principles
+@./memory/core/confidence-system.md    # Confidence-driven interaction
+@./memory/core/token-economy.md        # Token optimization rules
+@./memory/personas/personas-integration.md  # All persona definitions
+@./memory/rules/engineering-standards.md   # Development standards
+@./memory/mcp/tool-orchestration.md        # MCP tool integration
+```
+
+### Customizing Individual Modules
+Edit specific modules in `~/.claude/memory/` to customize behavior:
+
+#### Confidence System (`memory/core/confidence-system.md`)
 Adjust confidence levels for different interaction patterns:
 
 ```yaml
@@ -34,7 +61,7 @@ Confidence_65-84%: Collaborative validation # Wider collaboration zone
 Confidence_<65%: Human partnership required # Lower threshold
 ```
 
-### Token Economy Settings
+#### Token Economy (`memory/core/token-economy.md`)
 Customize output verbosity and optimization:
 
 ```yaml
@@ -55,8 +82,8 @@ UltraCompressed_Activation:
 Token_Reduction_Target: 80%    # More aggressive compression
 ```
 
-### Symbol System
-Customize symbols and abbreviations:
+#### Symbol System (`memory/core/token-economy.md`)
+Customize symbols and abbreviations in the token economy module:
 
 ```yaml
 # Add domain-specific symbols
@@ -74,10 +101,12 @@ Custom_Abbreviations:
   "BE": "backend"
 ```
 
-## Engineering Standards (RULES.md)
+## Engineering Standards (`memory/rules/engineering-standards.md`)
+
+All engineering rules and standards are consolidated in a single modular file.
 
 ### Severity Levels
-Adjust severity thresholds for different practices:
+Adjust severity thresholds in the engineering standards module:
 
 ```yaml
 # Default severity mapping
@@ -123,10 +152,12 @@ Tool_Selection_Priority:
   3. Hybrid approaches for complex tasks
 ```
 
-## Persona System (PERSONAS.md)
+## Persona System (`memory/personas/personas-integration.md`)
+
+All persona definitions and integration logic are in a single modular file.
 
 ### Custom Personas
-Add domain-specific cognitive modes:
+Add domain-specific cognitive modes to the personas integration module:
 
 ```yaml
 # Example: DevOps persona
@@ -182,29 +213,35 @@ File_Triggers:
 
 ## Command System
 
-### Custom Commands
-Add project-specific commands:
+### Available Commands
+AI Compass installs pre-built commands to `~/.claude/commands/`:
+- `/user:analyze` - Multi-dimensional code analysis
+- `/user:build` - AI-assisted development workflows  
+- `/user:troubleshoot` - Systematic debugging
+- `/user:improve` - Performance and quality optimization
+- `/user:design` - Architecture and API design
+- `/user:test` - Comprehensive testing strategies
+- `/user:scan` - Security and quality validation
+
+### Command Customization
+Customize command behavior by editing files in `~/.claude/commands/`:
 
 ```yaml
-# Example: Custom deployment command
-/user:deploy-staging:
-  Description: "Deploy to staging with full validation"
-  Arguments:
-    - "--validate: Full pre-deployment validation"
-    - "--monitor: Enable post-deployment monitoring"
-    - "--rollback: Prepare rollback procedures"
-  
-  Confidence_Integration:
-    - "High confidence: Direct deployment with monitoring"
-    - "Medium confidence: Deployment plan review required"
-    - "Low confidence: Manual approval required"
-  
-  Workflow:
-    1. "Run comprehensive test suite"
-    2. "Validate staging environment"
-    3. "Deploy with zero-downtime strategy"
-    4. "Enable monitoring and alerting"
-    5. "Verify deployment success"
+# Example: Customizing the analyze command
+# Edit ~/.claude/commands/analyze.md
+
+# Add custom analysis types
+Analysis_Types:
+  --security: "Focus on security vulnerabilities"
+  --performance: "Analyze performance bottlenecks"
+  --architecture: "Review system architecture"
+  --custom: "Project-specific analysis patterns"
+
+# Customize confidence thresholds
+Confidence_Adjustments:
+  Security_Analysis: +10%  # Higher confidence for security
+  Performance_Review: +5%  # Moderate boost for performance
+  Architecture_Review: +15% # High confidence for architecture
 ```
 
 ### Command Aliases
@@ -351,22 +388,28 @@ Security_Scanning: mandatory
 
 ## Validation & Testing
 
-### Custom Validation Rules
-Create project-specific validation:
+### Installation Validation
+Validate your customized installation:
 
 ```bash
-# Custom validation script
-./tools/validate-install.sh --dir /custom/path --strict
+# Validate default installation
+./tools/validate-install.sh
+
+# Validate custom tool installation
+./tools/validate-install.sh --tool cursor
+
+# Validate custom directory
+./tools/validate-install.sh --dir /custom/path
 ```
 
 ### Configuration Testing
 ```bash
 # Test custom configuration
-/user:analyze --code --validate-config
+/user:analyze --code
 
 # Test persona system
-/persona:custom-persona
-/user:test --custom-workflow
+/persona:architect
+/user:test --coverage
 ```
 
 ## Best Practices

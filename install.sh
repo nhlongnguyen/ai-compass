@@ -12,6 +12,23 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Utility functions for consistent output
+log_error() {
+    echo -e "${RED}Error: $1${NC}"
+}
+
+log_warning() {
+    echo -e "${YELLOW}Warning: $1${NC}"
+}
+
+log_success() {
+    echo -e "${GREEN}✓ $1${NC}"
+}
+
+log_info() {
+    echo -e "${BLUE}$1${NC}"
+}
+
 # Default values
 TOOL="claude-code"
 INSTALL_DIR=""
@@ -70,7 +87,7 @@ validate_installation_path() {
     if [[ ! "$path" = /* ]]; then
         local parent_dir=$(dirname "$path")
         if [[ ! -d "$parent_dir" ]]; then
-            echo -e "${RED}Error: Parent directory '$parent_dir' does not exist${NC}"
+            log_error "Parent directory '$parent_dir' does not exist"
             return 1
         fi
         path="$(cd "$parent_dir" && pwd)/$(basename "$path")"
@@ -84,8 +101,8 @@ validate_installation_path() {
         fi
     done
     
-    echo -e "${RED}Error: Installation path '$path' is not in safe directory whitelist${NC}"
-    echo -e "${YELLOW}Safe patterns:${NC}"
+    log_error "Installation path '$path' is not in safe directory whitelist"
+    log_warning "Safe patterns:"
     printf "  %s\n" "${SAFE_PATH_PATTERNS[@]}"
     return 1
 }
@@ -128,7 +145,7 @@ execute_rollback() {
 # Enhanced error handler
 handle_error() {
     local exit_code=$?
-    echo -e "${RED}Installation failed with exit code $exit_code${NC}"
+    log_error "Installation failed with exit code $exit_code"
     execute_rollback
     exit $exit_code
 }
@@ -449,20 +466,20 @@ if [[ " ${FEATURE_ARRAY[*]} " =~ " commands " ]] || [[ " ${FEATURE_ARRAY[*]} " =
             echo "  (Accessible via /user:command-name)"
             mkdir -p "$USER_COMMANDS_DIR"
             if ! cp -r "core/$TOOL/commands/"* "$USER_COMMANDS_DIR/" 2>/dev/null; then
-                echo -e "${YELLOW}Warning: Failed to install some user commands to $USER_COMMANDS_DIR${NC}"
+                log_warning "Failed to install some user commands to $USER_COMMANDS_DIR"
                 echo "Check permissions and retry if needed"
             fi
             
             # Also copy to memory for reference
             mkdir -p "$INSTALL_DIR/memory/commands"
             if ! cp -r "core/$TOOL/commands/"* "$INSTALL_DIR/memory/commands/" 2>/dev/null; then
-                echo -e "${YELLOW}Warning: Failed to copy commands to memory directory${NC}"
+                log_warning "Failed to copy commands to memory directory"
             fi
         else
             # For other tools, install to tool-specific directory
             mkdir -p "$INSTALL_DIR/commands"
             if ! cp -r "core/$TOOL/commands/"* "$INSTALL_DIR/commands/" 2>/dev/null; then
-                echo -e "${YELLOW}Warning: Failed to install commands to $INSTALL_DIR/commands${NC}"
+                log_warning "Failed to install commands to $INSTALL_DIR/commands"
                 echo "Installation may be incomplete"
             fi
         fi
@@ -491,27 +508,28 @@ echo "Verifying installation..."
 # Create rollback state for potential failure
 create_rollback_state
 
-# Comprehensive verification function
-verify_installation() {
-    local verification_failed=false
+# Core file verification
+verify_core_files() {
     local issues=()
     
-    # Check core files exist and are readable
     if [[ ! -f "$INSTALL_DIR/CLAUDE.md" ]]; then
         issues+=("Missing main CLAUDE.md configuration file")
-        verification_failed=true
     elif [[ ! -r "$INSTALL_DIR/CLAUDE.md" ]]; then
         issues+=("CLAUDE.md exists but is not readable")
-        verification_failed=true
     fi
     
-    # Check modular memory structure
+    printf '%s\n' "${issues[@]}"
+}
+
+# Memory structure verification
+verify_memory_structure() {
+    local issues=()
+    
     if [[ -d "$INSTALL_DIR/memory" ]]; then
         local memory_dirs=("core" "personas" "rules")
         for dir in "${memory_dirs[@]}"; do
             if [[ ! -d "$INSTALL_DIR/memory/$dir" ]]; then
                 issues+=("Missing memory module: $dir")
-                verification_failed=true
             fi
         done
         
@@ -521,45 +539,61 @@ verify_installation() {
                 import_file=$(echo "$import_line" | sed 's/@\.\/memory\///g')
                 if [[ ! -f "$INSTALL_DIR/memory/$import_file" ]]; then
                     issues+=("Broken import: $import_file referenced but not found")
-                    verification_failed=true
                 fi
             done < <(grep "^@\.\/memory\/" "$INSTALL_DIR/CLAUDE.md" 2>/dev/null || true)
         fi
     fi
     
-    # Verify command installation based on tool
+    printf '%s\n' "${issues[@]}"
+}
+
+# Command installation verification
+verify_commands() {
+    local issues=()
+    
     if [[ "$TOOL" == "claude-code" ]]; then
         local essential_commands=("analyze.md" "build.md" "troubleshoot.md")
         
-        # Verify user commands
         if [[ ! -d "$HOME/.claude/commands" ]]; then
             issues+=("User commands directory not created at ~/.claude/commands")
-            verification_failed=true
         else
             for cmd in "${essential_commands[@]}"; do
                 if [[ ! -f "$HOME/.claude/commands/$cmd" ]]; then
                     issues+=("Missing essential user command: $cmd")
-                    verification_failed=true
                 fi
             done
         fi
     fi
     
+    printf '%s\n' "${issues[@]}"
+}
+
+# Comprehensive verification function
+verify_installation() {
+    local all_issues=()
+    
+    # Collect all issues from sub-verifications
+    mapfile -t core_issues < <(verify_core_files)
+    mapfile -t memory_issues < <(verify_memory_structure)
+    mapfile -t command_issues < <(verify_commands)
+    
+    all_issues=("${core_issues[@]}" "${memory_issues[@]}" "${command_issues[@]}")
+    
     # Check file permissions
     if [[ ! -w "$INSTALL_DIR" ]]; then
-        issues+=("Installation directory is not writable")
-        verification_failed=true
+        all_issues+=("Installation directory is not writable")
     fi
     
     # Report results
-    if [[ "$verification_failed" == true ]]; then
-        echo -e "${RED}Installation verification failed:${NC}"
-        printf "  - %s\n" "${issues[@]}"
+    if [[ ${#all_issues[@]} -gt 0 ]]; then
+        log_error "Installation verification failed:"
+        printf "  - %s\n" "${all_issues[@]}"
         return 1
     else
-        echo -e "${GREEN}✓ Installation verification passed${NC}"
+        log_success "Installation verification passed"
         return 0
     fi
+    
 }
 
 # Run verification

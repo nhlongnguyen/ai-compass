@@ -12,6 +12,23 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Utility functions for consistent output
+log_error() {
+    echo -e "${RED}Error: $1${NC}"
+}
+
+log_warning() {
+    echo -e "${YELLOW}Warning: $1${NC}"
+}
+
+log_success() {
+    echo -e "${GREEN}✓ $1${NC}"
+}
+
+log_info() {
+    echo -e "${BLUE}$1${NC}"
+}
+
 # Default values
 TOOL="claude-code"
 INSTALL_DIR=""
@@ -74,7 +91,7 @@ echo ""
 
 # Check if installation directory exists
 if [[ ! -d "$INSTALL_DIR" ]]; then
-    echo -e "${RED}✗ Installation directory not found: $INSTALL_DIR${NC}"
+    log_error "Installation directory not found: $INSTALL_DIR"
     echo "Run ./install.sh to install AI Compass"
     exit 1
 fi
