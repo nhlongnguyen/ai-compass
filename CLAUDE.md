@@ -22,9 +22,8 @@ AI Compass is a universal configuration framework that transforms Claude Code an
 # Project-level memory for team collaboration
 ./install.sh --project-memory
 
-# Different tools and architectures
+# Different tools and options
 ./install.sh --tool cursor --modular
-./install.sh --monolithic
 ./install.sh --universal --dir ~/.ai-rules/
 ```
 
@@ -55,7 +54,6 @@ The project uses Claude Code's native import capability to create maintainable, 
 ```
 core/claude-code/
 ├── CLAUDE.md              # Main import file (~40 lines)
-├── CLAUDE-monolithic.md   # Legacy single-file version
 └── memory/               # Modular components
     ├── core/            # Philosophy, confidence, token economy
     ├── personas/        # Specialized thinking modes
@@ -117,7 +115,7 @@ Examples, configuration guides, and customization patterns
 
 ## Development Guidelines
 
-- **Modular First**: Prefer import-based architecture over monolithic
+- **Modular First**: Use import-based architecture for maintainability
 - **Evidence Required**: All optimization claims need supporting data
 - **Token Conscious**: Optimize for clarity while minimizing token usage
 - **Universal Design**: Consider multi-tool compatibility in changes

@@ -2,7 +2,7 @@
 
 ## Understanding Claude Code's Memory System
 
-Claude Code uses a hierarchical memory discovery system that automatically loads configuration files. AI Compass leverages this system with both modular and monolithic approaches.
+Claude Code uses a hierarchical memory discovery system that automatically loads configuration files. AI Compass leverages this system with a modular architecture approach.
 
 ## Memory Hierarchy
 
@@ -16,9 +16,9 @@ Claude Code uses a hierarchical memory discovery system that automatically loads
 - **Scope**: Specific to current project/repository
 - **Team Sharing**: Committed to version control for team consistency
 
-## Architecture Comparison
+## Architecture Overview
 
-### Modular Architecture (Recommended)
+### Modular Architecture
 
 **Main file (`~/.claude/CLAUDE.md`):**
 ```markdown
@@ -34,30 +34,12 @@ Claude Code uses a hierarchical memory discovery system that automatically loads
 ```
 
 **Benefits:**
-- 📦 **Memory Efficient**: ~20 line main file vs 365+ line monolithic
+- 📦 **Memory Efficient**: ~20 line main file with focused imports
 - 🔧 **Maintainable**: Focused, single-purpose files
 - 👥 **Team Collaboration**: Easy to share specific components
 - 🔄 **Updates**: Modify specific aspects without touching everything
 - 📖 **Readable**: Clear separation of concerns
 
-### Monolithic Architecture (Legacy)
-
-**Single file (`~/.claude/CLAUDE.md`):**
-```markdown
-# CLAUDE.md - AI Compass Core Configuration
-
-## Core Philosophy
-[All content embedded in single file - 365+ lines]
-
-## Confidence-Based Collaboration System
-[All systems defined inline]
-...
-```
-
-**When to use:**
-- 🔄 **Backward Compatibility**: Existing setups that work well
-- 🎯 **Simplicity**: Prefer single-file approach
-- 📦 **Portability**: Easy to copy/share entire configuration
 
 ## Installation Examples
 
@@ -78,13 +60,6 @@ Claude Code uses a hierarchical memory discovery system that automatically loads
 # Commit this file to your repository
 ```
 
-### Monolithic Personal Setup
-```bash
-# Install single-file configuration
-./install.sh --monolithic --user-memory
-
-# Result: ~/.claude/CLAUDE.md (single large file)
-```
 
 ## Memory Management Workflows
 
@@ -307,38 +282,3 @@ Claude Code not using new rules
 - ✅ Remove duplicate or redundant rules
 - ✅ Regular cleanup of obsolete memory files
 
-## Migration from Monolithic
-
-### Step 1: Backup Current Configuration
-```bash
-# Backup existing configuration
-cp ~/.claude/CLAUDE.md ~/.claude/CLAUDE-backup.md
-```
-
-### Step 2: Install Modular Architecture
-```bash
-# Install modular version
-./install.sh --modular --update
-
-# Validates migration
-./tools/memory-validate.sh
-```
-
-### Step 3: Customize and Test
-```bash
-# Test new configuration
-/user:analyze --code
-
-# Make adjustments if needed
-/memory
-```
-
-### Step 4: Team Migration
-```bash
-# Initialize project memory for team
-./tools/memory-init.sh --react
-
-# Share with team
-git add CLAUDE.md
-git commit -m "Migrate to modular AI Compass memory"
-```

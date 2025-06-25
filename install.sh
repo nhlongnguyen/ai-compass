@@ -20,7 +20,6 @@ UPDATE_MODE=false
 UNINSTALL_MODE=false
 FEATURES="all"
 BACKUP_DIR=""
-MEMORY_ARCHITECTURE="modular"
 MEMORY_LEVEL="user"
 
 # Tool-specific installation paths (function for compatibility)
@@ -70,7 +69,6 @@ show_usage() {
     echo ""
     echo "Memory Architecture:"
     echo "  --modular               Use import-based modular architecture (default)"
-    echo "  --monolithic            Use single-file architecture (legacy)"
     echo "  --project-memory        Install project-level memory (./CLAUDE.md)"
     echo "  --user-memory           Install user-level memory (~/.claude/CLAUDE.md)"
     echo ""
@@ -83,7 +81,6 @@ show_usage() {
     echo "Examples:"
     echo "  $0                                    # Default: Claude Code modular user memory"
     echo "  $0 --project-memory                  # Install team-shared project memory"
-    echo "  $0 --monolithic                      # Legacy single-file installation"
     echo "  $0 --tool cursor --modular           # Cursor with modular architecture"
     echo "  $0 --universal --dir ~/ai-rules/     # Universal installation"
     echo "  $0 --update --backup-dir ~/backups/  # Update with custom backup"
@@ -118,11 +115,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         --modular)
-            MEMORY_ARCHITECTURE="modular"
-            shift
-            ;;
-        --monolithic)
-            MEMORY_ARCHITECTURE="monolithic"
+            # Modular is now the default and only option
             shift
             ;;
         --project-memory)
@@ -222,7 +215,7 @@ echo "==============================="
 echo -e "Tool: ${YELLOW}$TOOL${NC}"
 echo -e "Directory: ${YELLOW}$INSTALL_DIR${NC}"
 echo -e "Features: ${YELLOW}$FEATURES${NC}"
-echo -e "Architecture: ${YELLOW}$MEMORY_ARCHITECTURE${NC}"
+echo -e "Architecture: ${YELLOW}modular${NC}"
 echo -e "Memory Level: ${YELLOW}$MEMORY_LEVEL${NC}"
 echo ""
 
@@ -317,23 +310,19 @@ if [[ " ${FEATURE_ARRAY[*]} " =~ " core " ]] || [[ " ${FEATURE_ARRAY[*]} " =~ " 
         echo "  Installing $TOOL-specific configurations..."
         
         # Handle memory architecture choice
-        if [[ "$MEMORY_ARCHITECTURE" == "modular" ]] && [[ -d "core/$TOOL/memory" ]]; then
+        # Use modular memory architecture
+        if [[ -d "core/$TOOL/memory" ]]; then
             echo "  Using modular memory architecture..."
             # Copy modular CLAUDE.md and memory directory
             cp "core/$TOOL/CLAUDE.md" "$INSTALL_DIR/"
             mkdir -p "$INSTALL_DIR/memory"
             cp -r "core/$TOOL/memory/"* "$INSTALL_DIR/memory/"
-        else
-            echo "  Using monolithic architecture..."
-            # Use legacy monolithic files
-            if [[ -f "core/$TOOL/CLAUDE-monolithic.md" ]]; then
-                cp "core/$TOOL/CLAUDE-monolithic.md" "$INSTALL_DIR/CLAUDE.md"
-            fi
-            # Copy other files
+            
+            # Copy other non-CLAUDE files
             for file in core/$TOOL/*.md; do
                 if [[ -f "$file" ]]; then
                     filename=$(basename "$file")
-                    if [[ "$filename" != "CLAUDE.md" ]] && [[ "$filename" != "CLAUDE-monolithic.md" ]]; then
+                    if [[ "$filename" != "CLAUDE.md" ]]; then
                         if [[ "$UPDATE_MODE" = true ]] && [[ -f "$INSTALL_DIR/$filename" ]]; then
                             if ! cmp -s "$file" "$INSTALL_DIR/$filename"; then
                                 echo "    Preserving customized $filename (new: $filename.new)"

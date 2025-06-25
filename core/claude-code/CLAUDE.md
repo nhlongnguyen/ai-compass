@@ -14,7 +14,6 @@ This configuration uses Claude Code's native import system to create a modular, 
 ## Specialized Systems
 @./memory/personas/personas-integration.md
 @./memory/rules/engineering-standards.md
-@./memory/rules/quality-gates.md
 @./memory/mcp/tool-orchestration.md
 @./memory/commands/power-commands.md
 
@@ -25,11 +24,11 @@ This configuration uses Claude Code's native import system to create a modular, 
 - **70-89%**: Collaborative validation required
 - **<70%**: Human partnership required
 
-### Key Commands
-- `/user:analyze --code` - Code analysis
-- `/user:build --react --magic` - AI-assisted development
-- `/persona:architect` - Switch to systems thinking
-- `/user:explain --uc` - Ultra-compressed explanations
+### Behavioral Triggers
+- "analyze the code" - Systematic code analysis
+- "build a React component" - AI-assisted development
+- "think like an architect" - Systems thinking mode
+- "explain this concisely" - Ultra-compressed explanations
 
 ### Memory Management
 - Use `#` for quick memory additions

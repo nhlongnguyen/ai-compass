@@ -1,7 +1,7 @@
 # AI Compass: Universal System Rules for AI Coding Tools
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/your_username/ai-compass)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/nhlongnguyen/ai-compass)
 
 **A comprehensive framework that transforms any AI coding tool into your specialized development partner through intelligent rule composition, evidence-based standards, and adaptive collaboration patterns.**
 
@@ -22,15 +22,14 @@ AI coding tools are powerful, but they lack consistency, context awareness, and 
 
 ```bash
 # Clone the repository
-git clone https://github.com/your_username/ai-compass.git
+git clone https://github.com/nhlongnguyen/ai-compass.git
 cd ai-compass
 
 # Install for Claude Code with modular architecture (default)
 ./install.sh
 
-# Install with different memory architectures
-./install.sh --modular              # Import-based modular (recommended)
-./install.sh --monolithic           # Single-file legacy approach
+# Install with different memory options
+./install.sh --modular              # Import-based modular (default)
 ./install.sh --project-memory       # Team-shared project memory
 ./install.sh --user-memory          # Personal cross-project memory
 
@@ -216,9 +215,9 @@ Status: [completed/remaining/blockers]
 
 ### Memory System (Claude Code)
 
-AI Compass now leverages Claude Code's native memory system with two approaches:
+AI Compass leverages Claude Code's native memory system:
 
-#### Modular Architecture (Recommended)
+#### Modular Architecture
 ```
 ~/.claude/                      # User-level memory
 ├── CLAUDE.md                  # Main import file (~20 lines)
@@ -235,10 +234,6 @@ AI Compass now leverages Claude Code's native memory system with two approaches:
 ./CLAUDE.md                    # Project-level memory (team-shared)
 ```
 
-#### Legacy Monolithic
-```
-~/.claude/CLAUDE.md            # Single large file (365+ lines)
-```
 
 ### Repository Structure
 ```
@@ -248,7 +243,6 @@ ai-compass/
 ├── core/                     # Core framework files
 │   ├── claude-code/          # Claude Code specific
 │   │   ├── CLAUDE.md        # Modular import-based config
-│   │   ├── CLAUDE-monolithic.md # Legacy single-file config
 │   │   └── memory/          # Modular memory components
 │   │       ├── core/        # Core philosophy & systems
 │   │       ├── personas/    # Persona integration
@@ -265,7 +259,7 @@ ai-compass/
 
 ### Design Principles
 
-1. **Memory-Efficient**: Modular import system reduces memory footprint by 70%+
+1. **Memory-Efficient**: Modular import system optimizes memory usage
 2. **Native Integration**: Leverages Claude Code's built-in memory discovery and import system
 3. **Dual Hierarchy**: Separate user-level and project-level memory for team collaboration
 4. **Progressive Disclosure**: Basic → Advanced → Expert feature progression  
@@ -294,8 +288,6 @@ ai-compass/
 # Claude Code with project-specific memory for teams
 ./install.sh --project-memory
 
-# Claude Code with legacy single-file approach
-./install.sh --monolithic
 
 # Cursor with modular architecture
 ./install.sh --tool cursor --modular --features commands,personas
@@ -374,12 +366,12 @@ Support for additional AI coding tools:
 - **Installation Issues**: Run `./install.sh --help` for options
 - **Command Reference**: Check `docs/commands/` after installation
 - **Configuration**: See `docs/configuration/` for customization
-- **Troubleshooting**: Visit [Issues](https://github.com/your_username/ai-compass/issues)
+- **Troubleshooting**: Visit [Issues](https://github.com/nhlongnguyen/ai-compass/issues)
 
 ### Community Resources
-- [Discussions](https://github.com/your_username/ai-compass/discussions) - General questions and ideas
-- [Wiki](https://github.com/your_username/ai-compass/wiki) - Community knowledge base
-- [Examples](https://github.com/your_username/ai-compass-examples) - Real-world usage patterns
+- [Discussions](https://github.com/nhlongnguyen/ai-compass/discussions) - General questions and ideas
+- [Wiki](https://github.com/nhlongnguyen/ai-compass/wiki) - Community knowledge base
+- [Examples](https://github.com/nhlongnguyen/ai-compass-examples) - Real-world usage patterns
 
 ### Contributing Guide
 See [CONTRIBUTING.md](CONTRIBUTING.md) for:
@@ -409,11 +401,11 @@ AI Compass builds upon excellent work from:
 **Ready to transform your AI coding experience?**
 
 ```bash
-git clone https://github.com/your_username/ai-compass.git
+git clone https://github.com/nhlongnguyen/ai-compass.git
 cd ai-compass
 ./install.sh
 ```
 
 *AI Compass v1.0.0 - Because intelligent assistance requires intelligent rules.*
 
-[⭐ Star on GitHub](https://github.com/your_username/ai-compass) | [💬 Join Discussion](https://github.com/your_username/ai-compass/discussions) | [🐛 Report Issue](https://github.com/your_username/ai-compass/issues)
+[⭐ Star on GitHub](https://github.com/nhlongnguyen/ai-compass) | [💬 Join Discussion](https://github.com/nhlongnguyen/ai-compass/discussions) | [🐛 Report Issue](https://github.com/nhlongnguyen/ai-compass/issues)

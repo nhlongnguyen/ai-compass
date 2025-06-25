@@ -194,7 +194,7 @@ if [[ -d "$MEMORY_DIR/memory" ]]; then
         fi
     done
 else
-    echo -e "${YELLOW}⚠ Modular memory directory not found (using monolithic architecture)${NC}"
+    echo -e "${YELLOW}⚠ Modular memory directory not found - may be using custom structure${NC}"
 fi
 
 # Check file sizes and complexity
@@ -240,4 +240,4 @@ echo ""
 echo "Summary:"
 echo "- Main file: $main_file_size lines"
 echo "- Total imports: $total_imports"
-echo "- Architecture: $([ -d "$MEMORY_DIR/memory" ] && echo "Modular" || echo "Monolithic")"
+echo "- Architecture: $([ -d "$MEMORY_DIR/memory" ] && echo "Modular" || echo "Custom")"

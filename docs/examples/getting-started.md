@@ -4,7 +4,7 @@
 
 ```bash
 # Clone and install
-git clone https://github.com/your_username/ai-compass.git
+git clone https://github.com/nhlongnguyen/ai-compass.git
 cd ai-compass
 ./install.sh
 
